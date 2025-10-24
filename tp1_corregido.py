@@ -327,9 +327,70 @@ plt.show()
 
 # %% [markdown]
 # ### 5.1. Determinación de k (Codo y GAP)
-#
-# **Nota:** Implementamos el GAP Statistic usando la función provista por el profesor, cumpliendo con la consigna.
 
+#%%
+def optimal_k(data, n_refs=5, max_k=15, method='kmeans'):
+    """
+    Calcula el Gap Statistic para K-Means o Clustering Jerárquico.
+    Tomado de U3_Clustering_Wheat.py
+    """
+    gaps = []
+    sds = []
+    inertias = []
+    
+    for k in range(1, max_k + 1):
+        # Cálcular la inercia del clustering original
+        if method == 'kmeans':
+            model = KMeans(n_clusters=k, n_init=10, random_state=42)
+            model.fit(data)
+            inertia_ = model.inertia_
+        elif method == 'hierarchical':
+            model = AgglomerativeClustering(n_clusters=k, linkage='ward')
+            labels = model.fit_predict(data)
+            if k == 1:
+                inertia_ = np.sum(pairwise_distances(data)**2) / (2 * len(data))
+            else:
+                cluster_centers = np.array([data[labels == i].mean(axis=0) for i in range(k)])
+                inertia_ = sum(np.sum((data[labels == i] - cluster_centers[i])**2) for i in range(k))
+        
+        inertias.append(inertia_)
+        
+        # Calcular la inercia para las referencias
+        ref_inertias = []
+        for _ in range(n_refs):
+            # Generar datos de referencia
+            ref_data = np.random.rand(*data.shape)
+            ref_data = ref_data * (data.max(axis=0) - data.min(axis=0)) + data.min(axis=0)
+            
+            if method == 'kmeans':
+                ref_model = KMeans(n_clusters=k, n_init=10, random_state=42)
+                ref_model.fit(ref_data)
+                ref_inertias.append(ref_model.inertia_)
+            elif method == 'hierarchical':
+                ref_model = AgglomerativeClustering(n_clusters=k, linkage='ward')
+                labels = ref_model.fit_predict(ref_data)
+                if k == 1:
+                    ref_inertia_ = np.sum(pairwise_distances(ref_data)**2) / (2 * len(ref_data))
+                else:
+                    ref_cluster_centers = np.array([ref_data[labels == i].mean(axis=0) for i in range(k)])
+                    ref_inertia_ = sum(np.sum((ref_data[labels == i] - ref_cluster_centers[i])**2) for i in range(k))
+                ref_inertias.append(ref_inertia_)
+        
+        # Calcular el Gap Statistic
+        gap = np.log(np.mean(ref_inertias)) - np.log(inertia_)
+        gaps.append(gap)
+        
+        # Calcular la desviación estándar de las inercias de referencia
+        sds.append(np.std(np.log(ref_inertias)))
+    
+    # Encontrar el k óptimo usando la regla 1-std-error
+    k_optimal = 1
+    for k in range(max_k - 1):
+        if gaps[k] >= gaps[k+1] - sds[k+1]:
+            k_optimal = k + 1
+            break
+            
+    return gaps, sds, k_optimal
 # %%
 # --- Método del Codo ---
 K_range_codo = range(1, 11) # Rango de k para probar
