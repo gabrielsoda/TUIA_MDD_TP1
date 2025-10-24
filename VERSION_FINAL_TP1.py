@@ -454,7 +454,6 @@ plot_tsne(X_std, y, max_iter=10000, perplexity=50, title='t-SNE Alto Iter y Perp
 # %% [markdown]
 # ## 5. K-Means
 
-# %%
 # %% [markdown]
 # ### 5.1. Determinación de k (Codo y GAP)
 
@@ -769,5 +768,20 @@ plt.show()
 # un valor de ~0.350 no está muy cerca de 1. Esto sugiere que, si bien 2 es el número óptimo de grupos, 
 # la separación entre ellos es solo moderada, no excelente. Los clusters no son "indiferentes" (cercanos a 0), 
 # pero tampoco están "claramente distinguidos" (cercanos a 1).
+
+# %% [markdown]
+# # Conclusión
+#
+# Tras aplicar los métodos de reducción de dimensionalidad (PCA, Isomap, t-SNE) y técnicas de clustering (k-means y clustering jerárquico) a un conjunto de datos con 311 muestras y 14 variables relacionadas con cultivos (como humedad del suelo, pH, temperatura, precipitación, entre otras), no se logró obtener visualizaciones que reflejaran una separación clara de los clústeres correspondientes a los tipos de cultivo (Trigo, Soja, Maíz). Este resultado puede atribuirse a varios factores fundamentales:
+#
+# 1. **Volumen limitado de datos**: El conjunto de datos, con solo 311 muestras, probablemente no proporciona suficiente información para que los algoritmos identifiquen patrones robustos que diferencien los cultivos. La alta dimensionalidad inicial (14 variables) agrava esta limitación, ya que los métodos de reducción y clustering requieren un mayor número de observaciones para capturar estructuras significativas.
+#
+# 2. **Ausencia de correlaciones relevantes**: El análisis de correlaciones mostró un valor máximo de -0.20 (ph del suelo con ml. de pesticidas), lo que indica que ninguna de las variables tiene una relación fuerte con la variable objetivo (`tipoCultivo`) ni entre sí. Esta falta de correlaciones relevantes sugiere que las variables incluidas en el conjunto de datos no son suficientemente discriminantes para distinguir entre los tipos de cultivo, lo que dificulta tanto la reducción de dimensionalidad como la formación de clústeres coherentes.
+#
+# 3. **Variables ruidosas o irrelevantes**: El preprocesamiento aplicado para codificar variables categóricas (como one-hot encoding) afectó la calidad de los datos y los resultados de los métodos aplicados. El dataset contaba con demasiadas dimensioens y además se sumaron las variables categóricas que fueron transformadas en dummies, que terminaron generando un total inicial de 17 dimensiones, de las cuales 9 tenían valores binarios.
+#
+# 4. **Métodos utilizados**: Los métodos de reducción de dimensionalidad empleados tienen supuestos que podrían no alinearse con la estructura de los datos. En PCA, por ejemplo, la baja correlación lineal (máximo -0.20) podría explicar la necesidad de generar muchas componentes principales para poder explicar un porcentaje suficiente de varianza. En cambio, ISOMAP y t-SNE, aunque diseñados para capturar estructuras no lineales, podrían no haber sido efectivos debido al pequeño tamaño del conjunto de datos, incluso habiendo intentado con distintas combinaciones de hiperparámetros. De manera similar, k-means y el clustering jerárquico podrían no ser ideales si los datos no presentan una estructura clara de agrupamiento.
+#
+# 5. **Solapamiento entre clases**: La falta de correlaciones relevantes y la incapacidad de los métodos para formar clusters significativos sugieren un alto grado de solapamiento entre las clases de cultivos en el espacio de características. Esto podría indicar que las variables medidas no capturan diferencias agronómicas o biológicas clave entre Trigo, Soja y Maíz, posiblemente debido a condiciones ambientales similares.
 
 # %%
